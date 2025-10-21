@@ -13,7 +13,6 @@ warnings.filterwarnings('ignore')
 
 def main():
     st.set_page_config(page_title="Advanced Economic Clustering Indonesia", layout="wide")
-    
     st.title("🔍 Advanced Indonesia's Economic People Clustering Analysis")
     st.write("**High-performance clustering with automatic feature selection and optimal cluster determination.**")
     
@@ -41,7 +40,7 @@ def main():
 def load_data():
     """Load data from CSV file"""
     try:
-        df = pd.read_csv("C:\\Users\\Win10\\Documents\\Dataset\\DataEkonomiIndonesia.csv")
+        df = pd.read_csv("DataEkonomiIndonesia.csv")
         return df
     except FileNotFoundError:
         st.error("❌ File 'DataEkonomiIndonesia.csv' not found. Please ensure the file is in the correct directory.")
@@ -817,7 +816,7 @@ def show_prediction():
                 if key.lower() in economic_segment.lower():
                     advice = advice_mapping[key]
                     break
-            
+                    
             st.info(advice)
                 
         except Exception as e:
