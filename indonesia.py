@@ -14,7 +14,7 @@ warnings.filterwarnings('ignore')
 def main():
     st.set_page_config(page_title="Advanced Economic Clustering Indonesia", layout="wide")
     st.title("🔍 Advanced Indonesia's Economic People Clustering Analysis")
-    st.write("**High-performance clustering with automatic feature selection and optimal cluster determination.**")
+    st.write("**An artificial intelligence tool that detects the economic status of every Indonesian citizen. The clustering findings have two, three, or four options: upper middle, low middle, affluent and middle.**")
     
     # Sidebar for navigation
     st.sidebar.title("Navigation")
@@ -825,3 +825,4 @@ def show_prediction():
 
 if __name__ == "__main__":
     main()
+
