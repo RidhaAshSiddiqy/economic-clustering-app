@@ -29,7 +29,7 @@ def main():
     # Using radio buttons for more elegant navigation
     app_mode = st.sidebar.radio(
         "Select Your Section:",
-        ["🏠 Home", "📊 Data Analysis", "🤖 Machine Learning", "📈 Data Visualization", "🚀 Prediction", "ℹ️ About"],
+        ["🏠 Home", "📊 Data Analysis", "🧠 Machine Learning", "📈 Data Visualization", "🚀 Prediction", "ℹ️ About"],
         index=0
     )
     
@@ -37,7 +37,7 @@ def main():
         show_home()
     elif app_mode == "📊 Data Analysis":
         show_eda()
-    elif app_mode == "🤖 Machine Learning":
+    elif app_mode == "🧠 Machine Learning":
         show_ml()
     elif app_mode == "📈 Data Visualization":
         show_visualization()
@@ -991,5 +991,6 @@ def show_prediction():
 
 if __name__ == "__main__":
     main()
+
 
 
