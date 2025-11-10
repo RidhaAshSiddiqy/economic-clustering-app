@@ -29,19 +29,19 @@ def main():
     # Using radio buttons for more elegant navigation
     app_mode = st.sidebar.radio(
         "Select Your Section:",
-        ["🏠 Home", "📊 EDA", "🤖 Machine Learning", "📈 Visualization", "🚀 New Prediction", "ℹ️ About"],
+        ["🏠 Home", "📊 Data Analysis", "🤖 Machine Learning", "📈 Data Visualization", "🚀 Prediction", "ℹ️ About"],
         index=0
     )
     
     if app_mode == "🏠 Home":
         show_home()
-    elif app_mode == "📊 EDA":
+    elif app_mode == "📊 Data Analysis":
         show_eda()
     elif app_mode == "🤖 Machine Learning":
         show_ml()
-    elif app_mode == "📈 Visualization":
+    elif app_mode == "📈 Data Visualization":
         show_visualization()
-    elif app_mode == "🚀 New Prediction":
+    elif app_mode == "🚀 Prediction":
         show_prediction()
     elif app_mode == "ℹ️ About":
         show_about()
@@ -63,7 +63,7 @@ def show_home():
     
     ### 🎯 What You Can Do Here:
     
-    🔍 **Exploratory Data Analysis (EDA)**
+    📊 **Data Analysis**
     - Comprehensive data exploration and visualization
     - Statistical analysis and data quality assessment
     - Correlation analysis and distribution insights
@@ -73,12 +73,12 @@ def show_home():
     - Automatic optimal cluster determination
     - K-means clustering with performance metrics
     
-    📈 **Interactive Visualization**
+    📈 **Data Visualization**
     - Cluster profiling and comparison
     - PCA visualization for cluster separation
     - Economic segment analysis
     
-    🚀 **Real-time Prediction**
+    🚀 **Prediction**
     - Predict economic segments for new individuals
     - Get personalized economic recommendations
     - Understand cluster characteristics
@@ -90,7 +90,6 @@ def show_home():
     - **Upper Middle** - Well-established economic status
     - **Middle** - Stable economic position
     - **Lower Middle** - Developing economic status
-    - And other meaningful economic classifications
     
     ### 🚀 Get Started:
     
@@ -214,7 +213,7 @@ def load_data():
         return None
 
 def show_eda():
-    st.header("📊 Exploratory Data Analysis (EDA)")
+    st.header("📊 Data Analysis")
     
     df = load_data()
     if df is None:
@@ -379,13 +378,13 @@ def show_eda():
     st.session_state.df_clean = df_clean
     st.session_state.df_original = df
     
-    st.info("**EDA Summary:** Dataset is ready for machine learning analysis with comprehensive insights into data structure, distributions, and relationships.")
+    st.info("**Data Analysis Summary:** Dataset is ready for machine learning analysis with comprehensive insights into data structure, distributions, and relationships.")
 
 def show_ml():
-    st.header("🤖 Advanced Machine Learning with Auto Feature Selection")
+    st.header("🤖 Machine Learning Clustering")
     
     if 'df_clean' not in st.session_state:
-        st.warning("⚠️ Please run Comprehensive EDA first")
+        st.warning("⚠️ Please run Data Analysis first")
         return
     
     df_clean = st.session_state.df_clean
@@ -701,7 +700,7 @@ def assign_economic_clusters(df_result):
     return df_result
 
 def show_visualization():
-    st.header("📈 Comprehensive Visualization")
+    st.header("📈 Data Visualization")
     
     if 'df_result' not in st.session_state:
         st.warning("⚠️ Please train the model first in the Machine Learning tab")
@@ -811,7 +810,7 @@ def show_visualization():
     )
 
 def show_prediction():
-    st.header("🚀 Economic Segment Prediction")
+    st.header("🚀 Prediction")
     
     if 'kmeans' not in st.session_state:
         st.warning("⚠️ Please train the model first in the Machine Learning tab")
