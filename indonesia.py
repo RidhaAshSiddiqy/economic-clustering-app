@@ -1,3 +1,4 @@
+# economic clustering indonesia.py
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -12,16 +13,29 @@ import warnings
 warnings.filterwarnings('ignore')
 
 def main():
-    st.set_page_config(page_title="Advanced Economic Clustering Indonesia", layout="wide")
+    st.set_page_config(
+        page_title="Advanced Economic Clustering Indonesia",
+        layout="wide",
+        page_icon="📊"
+    )
+    
     st.title("🔍 Advanced Indonesia's Economic People Clustering Analysis")
     st.write("**An artificial intelligence tool that detects the economic status of every Indonesian citizen. The clustering findings have two, three, or four options: upper middle, low middle, affluent and middle.**")
     
-    # Sidebar for navigation
-    st.sidebar.title("Navigation")
-    app_mode = st.sidebar.selectbox("Select Mode:", 
-                                  ["📊 EDA", "🤖 Machine Learning", "📈 Visualization", "🚀 New Prediction"])
+    # Enhanced Sidebar for navigation
+    st.sidebar.title("🌐 Navigation Panel")
+    st.sidebar.markdown("---")
     
-    if app_mode == "📊 EDA":
+    # Using radio buttons for more elegant navigation
+    app_mode = st.sidebar.radio(
+        "Select Your Section:",
+        ["🏠 Home", "📊 EDA", "🤖 Machine Learning", "📈 Visualization", "🚀 New Prediction", "ℹ️ About"],
+        index=0
+    )
+    
+    if app_mode == "🏠 Home":
+        show_home()
+    elif app_mode == "📊 EDA":
         show_eda()
     elif app_mode == "🤖 Machine Learning":
         show_ml()
@@ -29,13 +43,166 @@ def main():
         show_visualization()
     elif app_mode == "🚀 New Prediction":
         show_prediction()
+    elif app_mode == "ℹ️ About":
+        show_about()
     
     # Copyright at the bottom of main app
     st.markdown("---")
-    st.markdown('<div class="footer">', unsafe_allow_html=True)
     st.markdown("### Copyright © 2025 - Indonesia's Economic People Prediction System")
     st.markdown("**AI Assistant for Early Detection of Indonesia's Economic Peoples. All Rights Reserved. Created by Ridha Ash Siddiqy.**")
-    st.markdown('</div>', unsafe_allow_html=True)
+
+def show_home():
+    st.header("🏠 Welcome to Indonesia's Economic Clustering Analysis")
+    
+    st.markdown("""
+    ## 🌟 Overview
+    
+    Welcome to the **Advanced Indonesia's Economic People Clustering Analysis** platform! 
+    This intelligent system utilizes machine learning and artificial intelligence to analyze 
+    and cluster Indonesian citizens based on their economic characteristics.
+    
+    ### 🎯 What You Can Do Here:
+    
+    🔍 **Exploratory Data Analysis (EDA)**
+    - Comprehensive data exploration and visualization
+    - Statistical analysis and data quality assessment
+    - Correlation analysis and distribution insights
+    
+    🤖 **Machine Learning Clustering**
+    - Advanced feature engineering and selection
+    - Automatic optimal cluster determination
+    - K-means clustering with performance metrics
+    
+    📈 **Interactive Visualization**
+    - Cluster profiling and comparison
+    - PCA visualization for cluster separation
+    - Economic segment analysis
+    
+    🚀 **Real-time Prediction**
+    - Predict economic segments for new individuals
+    - Get personalized economic recommendations
+    - Understand cluster characteristics
+    
+    ### 📊 Expected Economic Segments:
+    
+    The system identifies meaningful economic clusters such as:
+    - **Affluent** - High net worth individuals
+    - **Upper Middle** - Well-established economic status
+    - **Middle** - Stable economic position
+    - **Lower Middle** - Developing economic status
+    - And other meaningful economic classifications
+    
+    ### 🚀 Get Started:
+    
+    Navigate through the sections using the sidebar to explore different aspects of the economic clustering analysis.
+    """)
+    
+    # Quick stats if data is available
+    if 'df_original' in st.session_state:
+        st.markdown("---")
+        st.subheader("📈 Quick Dataset Overview")
+        
+        df = st.session_state.df_original
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.metric("Total Records", f"{df.shape[0]:,}")
+        with col2:
+            st.metric("Total Features", df.shape[1])
+        with col3:
+            st.metric("Missing Values", df.isnull().sum().sum())
+        with col4:
+            st.metric("Data Ready", "✅" if 'df_clean' in st.session_state else "⏳")
+
+def show_about():
+    st.header("ℹ️ About This Project")
+    
+    col1, col2 = st.columns([2, 1])
+    
+    with col1:
+        st.markdown("""
+        ## 🌍 Project Overview
+        
+        **Advanced Indonesia's Economic People Clustering Analysis** is an innovative 
+        artificial intelligence platform designed to analyze and classify Indonesian 
+        citizens based on their economic characteristics using advanced machine learning 
+        techniques.
+        
+        ### 🎯 Mission & Vision
+        
+        **Mission:** To provide accurate, data-driven insights into Indonesia's economic 
+        landscape through advanced clustering algorithms.
+        
+        **Vision:** Become the leading AI-powered economic analysis tool for understanding 
+        and predicting economic segments in Indonesia.
+        
+        ### 🔬 Methodology
+        
+        This system employs:
+        - **K-means Clustering** for economic segmentation
+        - **Advanced Feature Engineering** for meaningful economic indicators
+        - **Automatic Feature Selection** for optimal model performance
+        - **Comprehensive Validation Metrics** including Silhouette Score, Calinski-Harabasz, and Davies-Bouldin Index
+        
+        ### 💡 Key Features
+        
+        - **Automated Data Preprocessing**: Handles missing values and data quality issues
+        - **Intelligent Feature Selection**: Automatically selects most relevant economic indicators
+        - **Optimal Cluster Detection**: Determines the best number of economic segments
+        - **Real-time Prediction**: Classifies new individuals into economic segments
+        - **Comprehensive Visualization**: Interactive charts and insights
+        
+        ### 📊 Data Sources
+        
+        The analysis is based on comprehensive economic datasets including:
+        - Salary and income data
+        - Savings and investment information
+        - Debt and liability records
+        - Demographic characteristics
+        """)
+    
+    with col2:
+        st.markdown("""
+        ## 👨‍💻 Developer Information
+        
+        **Created by:** Ridha Ash Siddiqy
+        
+        ### 🛠 Technical Stack
+        
+        - **Programming Language**: Python
+        - **Web Framework**: Streamlit
+        - **Machine Learning**: Scikit-learn
+        - **Data Analysis**: Pandas, NumPy
+        - **Visualization**: Matplotlib, Seaborn
+        - **Clustering**: K-means Algorithm
+        
+        ### 📈 Model Performance
+        
+        The system focuses on achieving:
+        - High silhouette scores (>0.5 for excellent separation)
+        - Meaningful economic segment interpretation
+        - Robust and scalable clustering solutions
+        - User-friendly interface and insights
+        
+        ### 🔒 Data Privacy
+        
+        - All analysis respects data privacy principles
+        - Anonymous data processing
+        - Secure data handling protocols
+        - Compliance with data protection standards
+        """)
+    
+    st.markdown("---")
+    st.markdown("""
+    ### 📞 Contact & Support
+    
+    For questions, suggestions, or collaboration opportunities, please reach out through 
+    appropriate channels. This project represents ongoing research in economic clustering 
+    and artificial intelligence applications in socioeconomic analysis.
+    
+    **🌟 Continuous Improvement:** This platform is regularly updated with new features, 
+    improved algorithms, and enhanced visualization capabilities.
+    """)
 
 def load_data():
     """Load data from CSV file"""
@@ -825,4 +992,5 @@ def show_prediction():
 
 if __name__ == "__main__":
     main()
+
 
