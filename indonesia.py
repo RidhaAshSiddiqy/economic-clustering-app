@@ -68,7 +68,7 @@ def show_home():
     - Statistical analysis and data quality assessment
     - Correlation analysis and distribution insights
     
-    🤖 **Machine Learning Clustering**
+    🧠 **Machine Learning Clustering**
     - Advanced feature engineering and selection
     - Automatic optimal cluster determination
     - K-means clustering with performance metrics
@@ -991,6 +991,7 @@ def show_prediction():
 
 if __name__ == "__main__":
     main()
+
 
 
 
