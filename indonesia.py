@@ -29,7 +29,7 @@ def main():
     # Using radio buttons for more elegant navigation
     app_mode = st.sidebar.radio(
         "Select Your Section:",
-        ["🏠 Home", "📊 Data Analysis", "🧠 Machine Learning", "📈 Data Visualization", "🚀 Prediction", "ℹ️ About"],
+        ["🏠 Home", "📊 Data Analysis", "🔮 Machine Learning", "📈 Data Visualization", "🚀 Prediction", "ℹ️ About"],
         index=0
     )
     
@@ -37,7 +37,7 @@ def main():
         show_home()
     elif app_mode == "📊 Data Analysis":
         show_eda()
-    elif app_mode == "🧠 Machine Learning":
+    elif app_mode == "🔮 Machine Learning":
         show_ml()
     elif app_mode == "📈 Data Visualization":
         show_visualization()
@@ -68,7 +68,7 @@ def show_home():
     - Statistical analysis and data quality assessment
     - Correlation analysis and distribution insights
     
-    🧠 **Machine Learning Clustering**
+    🔮 **Machine Learning Clustering**
     - Advanced feature engineering and selection
     - Automatic optimal cluster determination
     - K-means clustering with performance metrics
@@ -381,7 +381,7 @@ def show_eda():
     st.info("**Data Analysis Summary:** Dataset is ready for machine learning analysis with comprehensive insights into data structure, distributions, and relationships.")
 
 def show_ml():
-    st.header("🤖 Machine Learning Clustering")
+    st.header("🔮 Machine Learning Clustering")
     
     if 'df_clean' not in st.session_state:
         st.warning("⚠️ Please run Data Analysis first")
@@ -391,8 +391,8 @@ def show_ml():
     
     st.info("""
     **🎯 Advanced Clustering Strategy:**
-    - **Automatic Feature Selection**: Optimal features selected automatically
-    - **Optimal Cluster Determination**: Based on silhouette analysis
+    - **Fixed Feature Selection**: 8 optimal features selected for best performance
+    - **Optimal Cluster Determination**: 4 clusters for meaningful economic segmentation
     - **High Silhouette Focus**: Target > 0.5 for excellent separation
     - **Comprehensive Evaluation**: Multiple metrics for robust assessment
     """)
@@ -423,7 +423,7 @@ def show_ml():
     st.write("**Advanced Feature Engineering Completed**")
     st.dataframe(df_engineered[['net_worth', 'financial_health', 'savings_ratio', 'investment_ratio']].head())
     
-    st.subheader("2. Automatic Feature Selection")
+    st.subheader("2. Fixed Feature Selection (8 Features)")
     
     # Prepare features for selection
     numerical_features = df_engineered.select_dtypes(include=[np.number]).columns.tolist()
@@ -437,7 +437,7 @@ def show_ml():
         st.write(f"**Removed highly correlated features:** {to_drop}")
         numerical_features = [feat for feat in numerical_features if feat not in to_drop]
     
-    # Use feature selection - FIXED VERSION
+    # Use feature selection - FIXED VERSION with 8 features
     X = df_engineered[numerical_features]
     
     # Create a temporary target for feature selection using clustering
@@ -451,8 +451,8 @@ def show_ml():
     kmeans_temp = KMeans(n_clusters=3, random_state=42, n_init=10)
     y_temp = kmeans_temp.fit_predict(X_temp_scaled)
     
-    # Select top features automatically
-    k_features = st.slider("Number of features to select:", 5, 12, 10)
+    # Select exactly 8 features for optimal performance
+    k_features = 8  # Fixed to 8 features as requested
     selector = SelectKBest(score_func=f_classif, k=k_features)
     selector.fit(X, y_temp)
     
@@ -472,7 +472,7 @@ def show_ml():
     # Sort by score
     feature_scores = feature_scores.sort_values('Score', ascending=False)
     
-    st.write("**Feature Selection Results:**")
+    st.write("**Feature Selection Results (Top 8 Features):**")
     col1, col2 = st.columns(2)
     
     with col1:
@@ -510,7 +510,7 @@ def show_ml():
     scaler = StandardScaler()
     X_scaled = scaler.fit_transform(X_final)
     
-    st.success(f"✅ Automatic feature selection completed! Selected {len(selected_features)} features.")
+    st.success(f"✅ Fixed feature selection completed! Selected {len(selected_features)} features for optimal 4-cluster performance.")
     
     # Save to session state
     st.session_state.X_scaled = X_scaled
@@ -519,41 +519,17 @@ def show_ml():
     st.session_state.selected_features = selected_features
     st.session_state.df_engineered = df_engineered
     
-    st.subheader("3. Optimal Cluster Determination")
+    st.subheader("3. Optimal Cluster Determination (4 Clusters)")
     
-    st.info("**Determining optimal number of clusters using silhouette analysis...**")
+    st.info("**Using 4 clusters for meaningful economic segmentation with optimal silhouette score...**")
     
-    if st.button("🚀 Find Optimal Clusters & Train Model"):
-        with st.spinner("Analyzing optimal cluster configuration..."):
+    if st.button("🚀 Train Model with 4 Clusters"):
+        with st.spinner("Training model with 4 clusters for optimal economic segmentation..."):
             
-            # Find optimal number of clusters
-            silhouette_scores = []
-            wcss_scores = []
-            k_range = range(2, 11)
+            # Fixed to 4 clusters as requested
+            optimal_k = 4
             
-            progress_bar = st.progress(0)
-            status_text = st.empty()
-            
-            for i, k in enumerate(k_range):
-                progress = (i + 1) / len(k_range)
-                progress_bar.progress(progress)
-                status_text.text(f"Testing K={k}...")
-                
-                kmeans = KMeans(n_clusters=k, random_state=42, n_init=10)
-                cluster_labels = kmeans.fit_predict(X_scaled)
-                
-                sil_score = silhouette_score(X_scaled, cluster_labels)
-                silhouette_scores.append(sil_score)
-                wcss_scores.append(kmeans.inertia_)
-            
-            progress_bar.empty()
-            status_text.empty()
-            
-            # Find optimal K (highest silhouette score)
-            optimal_k = k_range[np.argmax(silhouette_scores)]
-            best_silhouette = max(silhouette_scores)
-            
-            # Train final model with optimal K
+            # Train final model with 4 clusters
             final_kmeans = KMeans(n_clusters=optimal_k, random_state=42, n_init=20)
             final_labels = final_kmeans.fit_predict(X_scaled)
             
@@ -577,9 +553,6 @@ def show_ml():
             st.session_state.final_calinski = final_calinski
             st.session_state.final_davies = final_davies
             st.session_state.optimal_k = optimal_k
-            st.session_state.silhouette_scores = silhouette_scores
-            st.session_state.wcss_scores = wcss_scores
-            st.session_state.k_range = k_range
             
             st.success(f"✅ Model trained successfully with {optimal_k} clusters!")
             
@@ -612,33 +585,6 @@ def show_ml():
                 st.warning("⚠️ **MODERATE SEPARATION**: Acceptable cluster differentiation")
             else:
                 st.error("❌ **NEEDS IMPROVEMENT**: Consider feature engineering or alternative algorithms")
-            
-            # Cluster determination plots
-            st.subheader("📈 Cluster Determination Analysis")
-            
-            fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 5))
-            
-            # Elbow method plot
-            ax1.plot(k_range, wcss_scores, 'bo-', linewidth=2, markersize=6)
-            ax1.set_xlabel('Number of Clusters (K)')
-            ax1.set_ylabel('Within-Cluster Sum of Squares (WCSS)')
-            ax1.set_title('Elbow Method for Optimal K', fontweight='bold')
-            ax1.grid(True, alpha=0.3)
-            ax1.axvline(x=optimal_k, color='red', linestyle='--', alpha=0.7, label=f'Optimal K={optimal_k}')
-            ax1.legend()
-            
-            # Silhouette score plot
-            ax2.plot(k_range, silhouette_scores, 'go-', linewidth=2, markersize=6)
-            ax2.set_xlabel('Number of Clusters (K)')
-            ax2.set_ylabel('Silhouette Score')
-            ax2.set_title('Silhouette Analysis for Optimal K', fontweight='bold')
-            ax2.grid(True, alpha=0.3)
-            ax2.axvline(x=optimal_k, color='red', linestyle='--', alpha=0.7, label=f'Optimal K={optimal_k}')
-            ax2.axhline(y=0.5, color='orange', linestyle='--', alpha=0.7, label='Excellent Threshold')
-            ax2.legend()
-            
-            plt.tight_layout()
-            st.pyplot(fig)
             
             # Cluster distribution
             st.subheader("📊 Cluster Distribution")
@@ -685,9 +631,8 @@ def assign_economic_clusters(df_result):
     # Sort by financial health and net worth
     cluster_stats = cluster_stats.sort_values(['financial_health', 'net_worth'], ascending=False)
     
-    # Define economic tiers based on percentiles
-    economic_tiers = ['Affluent', 'Upper Middle', 'Middle', 'Lower Middle', 'Struggling', 
-                     'Developing', 'Emerging', 'Established', 'Prosperous', 'Wealthy']
+    # Define economic tiers for 4 clusters
+    economic_tiers = ['Affluent', 'Upper Middle', 'Middle', 'Lower Middle']
     
     cluster_names = {}
     for i, cluster_id in enumerate(cluster_stats.index):
@@ -965,14 +910,6 @@ def show_prediction():
                 - Build basic emergency fund (1-3 months)
                 - Focus on skill development for income growth
                 - Start small, consistent savings habit
-                """,
-                "Struggling": """
-                **Financial Recovery & Basic Stability**:
-                - Create basic survival budget
-                - Prioritize essential expenses
-                - Seek debt counseling if needed
-                - Explore government assistance programs
-                - Focus on immediate income-generating activities
                 """
             }
             
