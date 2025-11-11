@@ -974,31 +974,69 @@ def show_prediction():
                     if not common_edu.empty:
                         st.metric("Common Education", common_edu.iloc[0])
             
-            # Show demographic insights if available
+            # Show demographic insights for the segment
             st.subheader("👥 Demographic Insights for This Segment")
             
+            # Check which demographic columns exist in the segment data
             demo_col1, demo_col2 = st.columns(2)
             
             with demo_col1:
-                if 'occupation' in segment_data.columns:
-                    common_occupation = segment_data['occupation'].mode()
+                # Occupation insights
+                occupation_data = segment_data.get('occupation')
+                if occupation_data is not None and len(occupation_data) > 0:
+                    common_occupation = occupation_data.mode()
                     if not common_occupation.empty:
-                        st.metric("Common Occupation", common_occupation.iloc[0])
+                        st.metric("Most Common Occupation", common_occupation.iloc[0])
                 
-                if 'marital_status' in segment_data.columns:
-                    common_marital = segment_data['marital_status'].mode()
+                # Marital status insights
+                marital_data = segment_data.get('marital_status')
+                if marital_data is not None and len(marital_data) > 0:
+                    common_marital = marital_data.mode()
                     if not common_marital.empty:
-                        st.metric("Common Marital Status", common_marital.iloc[0])
+                        st.metric("Most Common Marital Status", common_marital.iloc[0])
+                else:
+                    st.metric("Most Common Marital Status", "Data not available")
             
             with demo_col2:
-                if 'home_ownership' in segment_data.columns:
-                    common_home = segment_data['home_ownership'].mode()
+                # Home ownership insights
+                home_data = segment_data.get('home_ownership')
+                if home_data is not None and len(home_data) > 0:
+                    common_home = home_data.mode()
                     if not common_home.empty:
-                        st.metric("Common Home Status", common_home.iloc[0])
+                        st.metric("Most Common Home Status", common_home.iloc[0])
+                else:
+                    st.metric("Most Common Home Status", "Data not available")
                 
-                if 'dependents' in segment_data.columns:
-                    avg_dependents = segment_data['dependents'].mean()
+                # Dependents insights
+                dependents_data = segment_data.get('dependents')
+                if dependents_data is not None and len(dependents_data) > 0:
+                    avg_dependents = dependents_data.mean()
                     st.metric("Average Dependents", f"{avg_dependents:.1f}")
+                else:
+                    st.metric("Average Dependents", "Data not available")
+            
+            # Show additional demographic insights if available
+            demo_col3, demo_col4 = st.columns(2)
+            
+            with demo_col3:
+                # Location insights
+                location_data = segment_data.get('location_tier')
+                if location_data is not None and len(location_data) > 0:
+                    common_location = location_data.mode()
+                    if not common_location.empty:
+                        st.metric("Most Common Location", common_location.iloc[0])
+                else:
+                    st.metric("Most Common Location", "Data not available")
+            
+            with demo_col4:
+                # Vehicle ownership insights
+                vehicle_data = segment_data.get('vehicle_ownership')
+                if vehicle_data is not None and len(vehicle_data) > 0:
+                    common_vehicle = vehicle_data.mode()
+                    if not common_vehicle.empty:
+                        st.metric("Most Common Vehicle", common_vehicle.iloc[0])
+                else:
+                    st.metric("Most Common Vehicle", "Data not available")
             
             # Economic recommendations
             st.subheader("💡 Economic Recommendations")
