@@ -780,6 +780,30 @@ def show_prediction():
         age = st.number_input("Age", min_value=18, max_value=100, value=35, step=1)
         education = st.selectbox("Education Level", 
                                ["SHS", "Bachelor", "Master", "Doctoral", "Diploma", "JHS", "ES"])
+        
+        # New important demographic features
+        occupation = st.selectbox("Occupation Type", 
+                                ["Private Employee", "Government Employee", "Entrepreneur", 
+                                 "Professional", "Labor", "Unemployed", "Student", "Retired"])
+        
+        marital_status = st.selectbox("Marital Status", 
+                                    ["Single", "Married", "Divorced", "Widowed"])
+        
+        dependents = st.number_input("Number of Dependents", min_value=0, max_value=10, value=1, step=1,
+                                   help="Number of family members who depend on your income")
+        
+        home_ownership = st.selectbox("Home Ownership Status", 
+                                    ["Rented", "Owned (Mortgage)", "Owned (Fully)", "With Family", "Company Provided"])
+        
+        location_tier = st.selectbox("Residential Area Tier", 
+                                   ["Metropolitan (Jakarta, Surabaya, etc)", 
+                                    "Big City (Bandung, Medan, etc)", 
+                                    "Medium City", 
+                                    "Small City/Town", 
+                                    "Village/Rural"])
+        
+        vehicle_ownership = st.selectbox("Vehicle Ownership", 
+                                       ["No Vehicle", "Motorcycle Only", "Car Only", "Both Motorcycle and Car"])
     
     if st.button("🎯 Predict Economic Segment"):
         try:
@@ -795,6 +819,67 @@ def show_prediction():
                 np.log1p(investment) * 0.3 -
                 debt_to_income * 0.2
             )
+            
+            # Calculate additional demographic scores
+            # Education score (higher education = higher score)
+            education_scores = {
+                "ES": 1, "JHS": 2, "SHS": 3, "Diploma": 4, 
+                "Bachelor": 5, "Master": 6, "Doctoral": 7
+            }
+            education_score = education_scores.get(education, 3)
+            
+            # Occupation score
+            occupation_scores = {
+                "Unemployed": 1, "Student": 2, "Labor": 3, 
+                "Private Employee": 4, "Government Employee": 5,
+                "Professional": 6, "Entrepreneur": 7
+            }
+            occupation_score = occupation_scores.get(occupation, 3)
+            
+            # Location tier score (urban = higher economic opportunity)
+            location_scores = {
+                "Village/Rural": 1,
+                "Small City/Town": 2,
+                "Medium City": 3,
+                "Big City (Bandung, Medan, etc)": 4,
+                "Metropolitan (Jakarta, Surabaya, etc)": 5
+            }
+            location_score = location_scores.get(location_tier, 3)
+            
+            # Home ownership score
+            home_scores = {
+                "Rented": 1,
+                "With Family": 2,
+                "Company Provided": 3,
+                "Owned (Mortgage)": 4,
+                "Owned (Fully)": 5
+            }
+            home_score = home_scores.get(home_ownership, 3)
+            
+            # Vehicle ownership score
+            vehicle_scores = {
+                "No Vehicle": 1,
+                "Motorcycle Only": 3,
+                "Car Only": 4,
+                "Both Motorcycle and Car": 5
+            }
+            vehicle_score = vehicle_scores.get(vehicle_ownership, 2)
+            
+            # Dependents impact (more dependents = more financial burden)
+            dependents_impact = 1 / (1 + np.log1p(dependents))
+            
+            # Marital status impact
+            marital_impact = 1.2 if marital_status == "Married" else 1.0
+            
+            # Composite demographic score
+            demographic_score = (
+                education_score * 0.25 +
+                occupation_score * 0.30 +
+                location_score * 0.15 +
+                home_score * 0.15 +
+                vehicle_score * 0.10 +
+                marital_impact * 0.05
+            ) * dependents_impact
             
             # Prepare input using selected features
             selected_features = st.session_state.get('selected_features', [])
@@ -823,6 +908,20 @@ def show_prediction():
                     input_values.append(age)
                 elif feature == 'expenses':
                     input_values.append(expenses)
+                elif feature == 'education_score':
+                    input_values.append(education_score)
+                elif feature == 'occupation_score':
+                    input_values.append(occupation_score)
+                elif feature == 'location_score':
+                    input_values.append(location_score)
+                elif feature == 'home_score':
+                    input_values.append(home_score)
+                elif feature == 'vehicle_score':
+                    input_values.append(vehicle_score)
+                elif feature == 'demographic_score':
+                    input_values.append(demographic_score)
+                elif feature == 'dependents':
+                    input_values.append(dependents)
                 else:
                     # For features not provided, use median from training data
                     input_values.append(0)
@@ -875,6 +974,32 @@ def show_prediction():
                     if not common_edu.empty:
                         st.metric("Common Education", common_edu.iloc[0])
             
+            # Show demographic insights if available
+            st.subheader("👥 Demographic Insights for This Segment")
+            
+            demo_col1, demo_col2 = st.columns(2)
+            
+            with demo_col1:
+                if 'occupation' in segment_data.columns:
+                    common_occupation = segment_data['occupation'].mode()
+                    if not common_occupation.empty:
+                        st.metric("Common Occupation", common_occupation.iloc[0])
+                
+                if 'marital_status' in segment_data.columns:
+                    common_marital = segment_data['marital_status'].mode()
+                    if not common_marital.empty:
+                        st.metric("Common Marital Status", common_marital.iloc[0])
+            
+            with demo_col2:
+                if 'home_ownership' in segment_data.columns:
+                    common_home = segment_data['home_ownership'].mode()
+                    if not common_home.empty:
+                        st.metric("Common Home Status", common_home.iloc[0])
+                
+                if 'dependents' in segment_data.columns:
+                    avg_dependents = segment_data['dependents'].mean()
+                    st.metric("Average Dependents", f"{avg_dependents:.1f}")
+            
             # Economic recommendations
             st.subheader("💡 Economic Recommendations")
             
@@ -886,6 +1011,7 @@ def show_prediction():
                 - Implement comprehensive tax optimization strategies
                 - Focus on legacy and estate planning
                 - Explore philanthropic opportunities
+                - Consider professional wealth management services
                 """,
                 "Upper Middle": """
                 **Wealth Accumulation & Protection**:
@@ -894,6 +1020,7 @@ def show_prediction():
                 - Build substantial emergency funds (6-12 months)
                 - Consider real estate investments
                 - Enhance professional skills for career advancement
+                - Review insurance coverage adequacy
                 """,
                 "Middle": """
                 **Financial Stability & Growth**:
@@ -902,6 +1029,7 @@ def show_prediction():
                 - Start systematic investment plan
                 - Enhance financial literacy
                 - Explore side income opportunities
+                - Consider skill development programs
                 """,
                 "Lower Middle": """
                 **Financial Foundation Building**:
@@ -910,6 +1038,7 @@ def show_prediction():
                 - Build basic emergency fund (1-3 months)
                 - Focus on skill development for income growth
                 - Start small, consistent savings habit
+                - Explore government assistance programs if eligible
                 """
             }
             
@@ -921,6 +1050,35 @@ def show_prediction():
                     break
                     
             st.info(advice)
+            
+            # Additional personalized tips based on demographic factors
+            st.subheader("🎯 Personalized Tips Based on Your Profile")
+            
+            personalized_tips = []
+            
+            if education_score >= 5:  # Bachelor or higher
+                personalized_tips.append("✅ Leverage your educational background for career advancement")
+            else:
+                personalized_tips.append("💡 Consider further education or certification programs to increase earning potential")
+                
+            if occupation_score >= 5:  Government Employee or higher
+                personalized_tips.append("✅ Your occupation provides good stability - focus on career progression")
+            else:
+                personalized_tips.append("💡 Explore opportunities for career development or side businesses")
+                
+            if dependents >= 3:
+                personalized_tips.append("👨‍👩‍👧‍👦 With multiple dependents, prioritize family budgeting and education planning")
+                
+            if home_score >= 4:  # Home owned with mortgage or fully
+                personalized_tips.append("🏠 Your home ownership is a strong asset - consider its role in your net worth")
+            else:
+                personalized_tips.append("🏠 Consider long-term housing strategy as part of your financial plan")
+                
+            if vehicle_score <= 2:  # No vehicle or motorcycle only
+                personalized_tips.append("🚗 Vehicle ownership could be a next financial goal for improved mobility")
+                
+            for tip in personalized_tips:
+                st.write(tip)
                 
         except Exception as e:
             st.error(f"Prediction error: {str(e)}")
