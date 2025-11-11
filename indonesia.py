@@ -1061,7 +1061,7 @@ def show_prediction():
             else:
                 personalized_tips.append("💡 Consider further education or certification programs to increase earning potential")
                 
-            if occupation_score >= 5:  Government Employee or higher
+            if occupation_score >= 5:  # Government Employee or higher
                 personalized_tips.append("✅ Your occupation provides good stability - focus on career progression")
             else:
                 personalized_tips.append("💡 Explore opportunities for career development or side businesses")
