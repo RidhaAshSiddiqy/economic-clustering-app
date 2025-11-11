@@ -1,4 +1,4 @@
-# economic clustering indonesia.py
+# economic_clustering_indonesia.py
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -206,10 +206,10 @@ def show_about():
 def load_data():
     """Load data from CSV file"""
     try:
-        df = pd.read_csv("DataEkonomiIndonesia.csv")
+        df = pd.read_csv("Indonesia_Economy.csv")
         return df
     except FileNotFoundError:
-        st.error("❌ File 'DataEkonomiIndonesia.csv' not found. Please ensure the file is in the correct directory.")
+        st.error("❌ File 'Indonesia_Economy.csv' not found. Please ensure the file is in the correct directory.")
         return None
 
 def show_eda():
@@ -218,6 +218,9 @@ def show_eda():
     df = load_data()
     if df is None:
         return
+    
+    # Store original data in session state
+    st.session_state.df_original = df
     
     # Display data overview
     st.subheader("1. Dataset Overview")
@@ -376,7 +379,6 @@ def show_eda():
     
     # Save cleaned data to session state
     st.session_state.df_clean = df_clean
-    st.session_state.df_original = df
     
     st.info("**Data Analysis Summary:** Dataset is ready for machine learning analysis with comprehensive insights into data structure, distributions, and relationships.")
 
@@ -619,27 +621,46 @@ def show_ml():
 
 def assign_economic_clusters(df_result):
     """Assign meaningful economic cluster names based on financial characteristics"""
-    cluster_stats = df_result.groupby('cluster').agg({
-        'salary': 'mean',
-        'savings': 'mean',
-        'investment': 'mean',
-        'debt': 'mean',
-        'net_worth': 'mean',
-        'financial_health': 'mean'
-    }).round(2)
+    # Calculate cluster statistics using available columns
+    stats_columns = []
+    for col in ['salary', 'savings', 'investment', 'debt', 'net_worth', 'financial_health']:
+        if col in df_result.columns:
+            stats_columns.append(col)
     
-    # Sort by financial health and net worth
-    cluster_stats = cluster_stats.sort_values(['financial_health', 'net_worth'], ascending=False)
-    
-    # Define economic tiers for 4 clusters
-    economic_tiers = ['Affluent', 'Upper Middle', 'Middle', 'Lower Middle']
-    
-    cluster_names = {}
-    for i, cluster_id in enumerate(cluster_stats.index):
-        if i < len(economic_tiers):
-            cluster_names[cluster_id] = f"Cluster {cluster_id} - {economic_tiers[i]}"
-        else:
-            cluster_names[cluster_id] = f"Cluster {cluster_id}"
+    if stats_columns:
+        cluster_stats = df_result.groupby('cluster')[stats_columns].mean().round(2)
+        
+        # Sort by financial health and net worth if available, otherwise by salary
+        sort_columns = []
+        if 'financial_health' in cluster_stats.columns:
+            sort_columns.append('financial_health')
+        if 'net_worth' in cluster_stats.columns:
+            sort_columns.append('net_worth')
+        if 'salary' in cluster_stats.columns and not sort_columns:
+            sort_columns.append('salary')
+        
+        if sort_columns:
+            cluster_stats = cluster_stats.sort_values(sort_columns, ascending=False)
+        
+        # Define economic tiers for 4 clusters
+        economic_tiers = ['Affluent', 'Upper Middle', 'Middle', 'Lower Middle']
+        
+        cluster_names = {}
+        for i, cluster_id in enumerate(cluster_stats.index):
+            if i < len(economic_tiers):
+                cluster_names[cluster_id] = f"Cluster {cluster_id} - {economic_tiers[i]}"
+            else:
+                cluster_names[cluster_id] = f"Cluster {cluster_id}"
+    else:
+        # Fallback if no financial columns are available
+        cluster_counts = df_result['cluster'].value_counts().sort_index()
+        economic_tiers = ['Affluent', 'Upper Middle', 'Middle', 'Lower Middle']
+        cluster_names = {}
+        for i, cluster_id in enumerate(cluster_counts.index):
+            if i < len(economic_tiers):
+                cluster_names[cluster_id] = f"Cluster {cluster_id} - {economic_tiers[i]}"
+            else:
+                cluster_names[cluster_id] = f"Cluster {cluster_id}"
     
     df_result['economic_segment'] = df_result['cluster'].map(cluster_names)
     return df_result
@@ -702,29 +723,38 @@ def show_visualization():
     
     st.write(f"**📊 {selected_segment} Profile ({len(segment_data)} individuals)**")
     
-    # Financial statistics
+    # Financial statistics - only show available columns
     financial_features = ['salary', 'savings', 'investment', 'debt', 'net_worth', 'financial_health']
-    financial_stats = segment_data[financial_features].describe()
+    available_financial_features = [f for f in financial_features if f in segment_data.columns]
     
-    st.write("**💰 Financial Analysis:**")
-    st.dataframe(financial_stats.style.format('{:,.2f}'))
+    if available_financial_features:
+        financial_stats = segment_data[available_financial_features].describe()
+        st.write("**💰 Financial Analysis:**")
+        st.dataframe(financial_stats.style.format('{:,.2f}'))
+    else:
+        st.info("No financial features available for analysis")
     
     # Comparison with other clusters
     st.subheader("4. Cross-Cluster Comparison")
     
     comparison_features = ['salary', 'savings', 'investment', 'debt', 'net_worth', 'financial_health']
-    comparison_stats = df_result.groupby('economic_segment')[comparison_features].mean().round(2)
+    available_comparison_features = [f for f in comparison_features if f in df_result.columns]
     
-    st.write("**Financial Metrics Comparison Across Segments:**")
-    st.dataframe(comparison_stats)
-    
-    # Enhanced heatmap
-    fig, ax = plt.subplots(figsize=(12, 8))
-    sns.heatmap(comparison_stats.T, annot=True, cmap='RdYlGn', ax=ax, fmt='.0f', 
-                linewidths=1, linecolor='white')
-    ax.set_title('Financial Metrics Comparison Across Economic Segments', fontweight='bold', pad=20)
-    plt.xticks(rotation=45)
-    st.pyplot(fig)
+    if available_comparison_features:
+        comparison_stats = df_result.groupby('economic_segment')[available_comparison_features].mean().round(2)
+        
+        st.write("**Financial Metrics Comparison Across Segments:**")
+        st.dataframe(comparison_stats)
+        
+        # Enhanced heatmap
+        fig, ax = plt.subplots(figsize=(12, 8))
+        sns.heatmap(comparison_stats.T, annot=True, cmap='RdYlGn', ax=ax, fmt='.0f', 
+                    linewidths=1, linecolor='white')
+        ax.set_title('Financial Metrics Comparison Across Economic Segments', fontweight='bold', pad=20)
+        plt.xticks(rotation=45)
+        st.pyplot(fig)
+    else:
+        st.info("No financial features available for cross-cluster comparison")
     
     # PCA Visualization
     st.subheader("5. Cluster Visualization (PCA)")
@@ -789,7 +819,7 @@ def show_prediction():
                           ["Urban", "Suburban", "Rural"])
         
         employment_status = st.selectbox("Employment Status", 
-                                       ["Employed", "Self-Employed", "Unemployed", "Student", "Retired"])
+                                       ["Employment", "Self-Employment", "Unemployment", "Student", "Retired"])
         
         vehicle_ownership = st.selectbox("Vehicle Ownership", 
                                        ["No Vehicle", "Motorcycle", "Car", "Motorcycle and Car"])
@@ -822,11 +852,11 @@ def show_prediction():
             
             # Employment status score
             employment_scores = {
-                "Unemployed": 1,
+                "Unemployment": 1,
                 "Student": 2,
                 "Retired": 3,
-                "Self-Employed": 4,
-                "Employed": 5
+                "Self-Employment": 4,
+                "Employment": 5
             }
             employment_score = employment_scores.get(employment_status, 3)
             
@@ -872,46 +902,31 @@ def show_prediction():
             selected_features = st.session_state.get('selected_features', [])
             input_values = []
             
+            # Create a mapping of feature names to values
+            feature_value_map = {
+                'salary': salary,
+                'savings': savings,
+                'investment': investment,
+                'debt': debt,
+                'net_worth': net_worth,
+                'savings_ratio': savings_ratio,
+                'investment_ratio': investment_ratio,
+                'debt_to_income': debt_to_income,
+                'financial_health': financial_health,
+                'age': age,
+                'expenses': expenses,
+                'education_score': education_score,
+                'employment_score': employment_score,
+                'house_score': house_score,
+                'area_score': area_score,
+                'vehicle_score': vehicle_score,
+                'demographic_score': demographic_score,
+                'dependents': dependents
+            }
+            
+            # Build input values based on selected features
             for feature in selected_features:
-                if feature == 'salary':
-                    input_values.append(salary)
-                elif feature == 'savings':
-                    input_values.append(savings)
-                elif feature == 'investment':
-                    input_values.append(investment)
-                elif feature == 'debt':
-                    input_values.append(debt)
-                elif feature == 'net_worth':
-                    input_values.append(net_worth)
-                elif feature == 'savings_ratio':
-                    input_values.append(savings_ratio)
-                elif feature == 'investment_ratio':
-                    input_values.append(investment_ratio)
-                elif feature == 'debt_to_income':
-                    input_values.append(debt_to_income)
-                elif feature == 'financial_health':
-                    input_values.append(financial_health)
-                elif feature == 'age':
-                    input_values.append(age)
-                elif feature == 'expenses':
-                    input_values.append(expenses)
-                elif feature == 'education_score':
-                    input_values.append(education_score)
-                elif feature == 'employment_score':
-                    input_values.append(employment_score)
-                elif feature == 'house_score':
-                    input_values.append(house_score)
-                elif feature == 'area_score':
-                    input_values.append(area_score)
-                elif feature == 'vehicle_score':
-                    input_values.append(vehicle_score)
-                elif feature == 'demographic_score':
-                    input_values.append(demographic_score)
-                elif feature == 'dependents':
-                    input_values.append(dependents)
-                else:
-                    # For features not provided, use median from training data
-                    input_values.append(0)
+                input_values.append(feature_value_map.get(feature, 0))
             
             input_numeric = np.array([input_values])
             
@@ -943,15 +958,21 @@ def show_prediction():
             
             col1, col2, col3 = st.columns(3)
             
+            # Financial metrics
             with col1:
-                st.metric("Average Salary", f"Rp{segment_data['salary'].mean():.1f}M")
-                st.metric("Average Savings", f"Rp{segment_data['savings'].mean():.1f}M")
+                if 'salary' in segment_data.columns:
+                    st.metric("Average Salary", f"Rp{segment_data['salary'].mean():.1f}M")
+                if 'savings' in segment_data.columns:
+                    st.metric("Average Savings", f"Rp{segment_data['savings'].mean():.1f}M")
                 st.metric("Segment Size", f"{len(segment_data):,} people")
             
             with col2:
-                st.metric("Average Investment", f"Rp{segment_data['investment'].mean():.1f}M")
-                st.metric("Average Net Worth", f"Rp{segment_data['net_worth'].mean():.1f}M")
-                st.metric("Financial Health", f"{segment_data['financial_health'].mean():.1f}")
+                if 'investment' in segment_data.columns:
+                    st.metric("Average Investment", f"Rp{segment_data['investment'].mean():.1f}M")
+                if 'net_worth' in segment_data.columns:
+                    st.metric("Average Net Worth", f"Rp{segment_data['net_worth'].mean():.1f}M")
+                if 'financial_health' in segment_data.columns:
+                    st.metric("Financial Health", f"{segment_data['financial_health'].mean():.1f}")
             
             with col3:
                 if 'age' in segment_data.columns:
