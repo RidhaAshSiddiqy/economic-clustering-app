@@ -781,29 +781,21 @@ def show_prediction():
         education = st.selectbox("Education Level", 
                                ["SHS", "Bachelor", "Master", "Doctoral", "Diploma", "JHS", "ES"])
         
-        # New important demographic features
-        occupation = st.selectbox("Occupation Type", 
-                                ["Private Employee", "Government Employee", "Entrepreneur", 
-                                 "Professional", "Labor", "Unemployed", "Student", "Retired"])
+        # Updated demographic features based on actual dataset
+        house_ownership = st.selectbox("House Ownership", 
+                                     ["Leased", "Contract", "Parents", "Owned"])
         
-        marital_status = st.selectbox("Marital Status", 
-                                    ["Single", "Married", "Divorced", "Widowed"])
+        area = st.selectbox("Area", 
+                          ["Urban", "Suburban", "Rural"])
+        
+        employment_status = st.selectbox("Employment Status", 
+                                       ["Employed", "Self-Employed", "Unemployed", "Student", "Retired"])
+        
+        vehicle_ownership = st.selectbox("Vehicle Ownership", 
+                                       ["No Vehicle", "Motorcycle", "Car", "Motorcycle and Car"])
         
         dependents = st.number_input("Number of Dependents", min_value=0, max_value=10, value=1, step=1,
                                    help="Number of family members who depend on your income")
-        
-        home_ownership = st.selectbox("Home Ownership Status", 
-                                    ["Rented", "Owned (Mortgage)", "Owned (Fully)", "With Family", "Company Provided"])
-        
-        location_tier = st.selectbox("Residential Area Tier", 
-                                   ["Metropolitan (Jakarta, Surabaya, etc)", 
-                                    "Big City (Bandung, Medan, etc)", 
-                                    "Medium City", 
-                                    "Small City/Town", 
-                                    "Village/Rural"])
-        
-        vehicle_ownership = st.selectbox("Vehicle Ownership", 
-                                       ["No Vehicle", "Motorcycle Only", "Car Only", "Both Motorcycle and Car"])
     
     if st.button("🎯 Predict Economic Segment"):
         try:
@@ -820,7 +812,7 @@ def show_prediction():
                 debt_to_income * 0.2
             )
             
-            # Calculate additional demographic scores
+            # Calculate additional demographic scores based on actual dataset features
             # Education score (higher education = higher score)
             education_scores = {
                 "ES": 1, "JHS": 2, "SHS": 3, "Diploma": 4, 
@@ -828,57 +820,52 @@ def show_prediction():
             }
             education_score = education_scores.get(education, 3)
             
-            # Occupation score
-            occupation_scores = {
-                "Unemployed": 1, "Student": 2, "Labor": 3, 
-                "Private Employee": 4, "Government Employee": 5,
-                "Professional": 6, "Entrepreneur": 7
+            # Employment status score
+            employment_scores = {
+                "Unemployed": 1,
+                "Student": 2,
+                "Retired": 3,
+                "Self-Employed": 4,
+                "Employed": 5
             }
-            occupation_score = occupation_scores.get(occupation, 3)
+            employment_score = employment_scores.get(employment_status, 3)
             
-            # Location tier score (urban = higher economic opportunity)
-            location_scores = {
-                "Village/Rural": 1,
-                "Small City/Town": 2,
-                "Medium City": 3,
-                "Big City (Bandung, Medan, etc)": 4,
-                "Metropolitan (Jakarta, Surabaya, etc)": 5
+            # House ownership score
+            house_scores = {
+                "Leased": 1,
+                "Parents": 2,
+                "Contract": 3,
+                "Owned": 4
             }
-            location_score = location_scores.get(location_tier, 3)
+            house_score = house_scores.get(house_ownership, 2)
             
-            # Home ownership score
-            home_scores = {
-                "Rented": 1,
-                "With Family": 2,
-                "Company Provided": 3,
-                "Owned (Mortgage)": 4,
-                "Owned (Fully)": 5
+            # Area score (urban = higher economic opportunity)
+            area_scores = {
+                "Rural": 1,
+                "Suburban": 2,
+                "Urban": 3
             }
-            home_score = home_scores.get(home_ownership, 3)
+            area_score = area_scores.get(area, 2)
             
             # Vehicle ownership score
             vehicle_scores = {
                 "No Vehicle": 1,
-                "Motorcycle Only": 3,
-                "Car Only": 4,
-                "Both Motorcycle and Car": 5
+                "Motorcycle": 2,
+                "Car": 3,
+                "Motorcycle and Car": 4
             }
-            vehicle_score = vehicle_scores.get(vehicle_ownership, 2)
+            vehicle_score = vehicle_scores.get(vehicle_ownership, 1)
             
             # Dependents impact (more dependents = more financial burden)
             dependents_impact = 1 / (1 + np.log1p(dependents))
             
-            # Marital status impact
-            marital_impact = 1.2 if marital_status == "Married" else 1.0
-            
             # Composite demographic score
             demographic_score = (
                 education_score * 0.25 +
-                occupation_score * 0.30 +
-                location_score * 0.15 +
-                home_score * 0.15 +
-                vehicle_score * 0.10 +
-                marital_impact * 0.05
+                employment_score * 0.30 +
+                house_score * 0.15 +
+                area_score * 0.10 +
+                vehicle_score * 0.20
             ) * dependents_impact
             
             # Prepare input using selected features
@@ -910,12 +897,12 @@ def show_prediction():
                     input_values.append(expenses)
                 elif feature == 'education_score':
                     input_values.append(education_score)
-                elif feature == 'occupation_score':
-                    input_values.append(occupation_score)
-                elif feature == 'location_score':
-                    input_values.append(location_score)
-                elif feature == 'home_score':
-                    input_values.append(home_score)
+                elif feature == 'employment_score':
+                    input_values.append(employment_score)
+                elif feature == 'house_score':
+                    input_values.append(house_score)
+                elif feature == 'area_score':
+                    input_values.append(area_score)
                 elif feature == 'vehicle_score':
                     input_values.append(vehicle_score)
                 elif feature == 'demographic_score':
@@ -974,61 +961,21 @@ def show_prediction():
                     if not common_edu.empty:
                         st.metric("Common Education", common_edu.iloc[0])
             
-            # Show demographic insights for the segment
+            # Show simplified demographic insights for the segment
             st.subheader("👥 Demographic Insights for This Segment")
             
-            # Check which demographic columns exist in the segment data
             demo_col1, demo_col2 = st.columns(2)
             
             with demo_col1:
-                # Occupation insights
-                occupation_data = segment_data.get('occupation')
-                if occupation_data is not None and len(occupation_data) > 0:
-                    common_occupation = occupation_data.mode()
-                    if not common_occupation.empty:
-                        st.metric("Most Common Occupation", common_occupation.iloc[0])
+                # Employment status insights
+                employment_data = segment_data.get('employment_status')
+                if employment_data is not None and len(employment_data) > 0:
+                    common_employment = employment_data.mode()
+                    if not common_employment.empty:
+                        st.metric("Most Common Employment", common_employment.iloc[0])
+                else:
+                    st.metric("Most Common Employment", "Data not available")
                 
-                # Marital status insights
-                marital_data = segment_data.get('marital_status')
-                if marital_data is not None and len(marital_data) > 0:
-                    common_marital = marital_data.mode()
-                    if not common_marital.empty:
-                        st.metric("Most Common Marital Status", common_marital.iloc[0])
-                else:
-                    st.metric("Most Common Marital Status", "Data not available")
-            
-            with demo_col2:
-                # Home ownership insights
-                home_data = segment_data.get('home_ownership')
-                if home_data is not None and len(home_data) > 0:
-                    common_home = home_data.mode()
-                    if not common_home.empty:
-                        st.metric("Most Common Home Status", common_home.iloc[0])
-                else:
-                    st.metric("Most Common Home Status", "Data not available")
-                
-                # Dependents insights
-                dependents_data = segment_data.get('dependents')
-                if dependents_data is not None and len(dependents_data) > 0:
-                    avg_dependents = dependents_data.mean()
-                    st.metric("Average Dependents", f"{avg_dependents:.1f}")
-                else:
-                    st.metric("Average Dependents", "Data not available")
-            
-            # Show additional demographic insights if available
-            demo_col3, demo_col4 = st.columns(2)
-            
-            with demo_col3:
-                # Location insights
-                location_data = segment_data.get('location_tier')
-                if location_data is not None and len(location_data) > 0:
-                    common_location = location_data.mode()
-                    if not common_location.empty:
-                        st.metric("Most Common Location", common_location.iloc[0])
-                else:
-                    st.metric("Most Common Location", "Data not available")
-            
-            with demo_col4:
                 # Vehicle ownership insights
                 vehicle_data = segment_data.get('vehicle_ownership')
                 if vehicle_data is not None and len(vehicle_data) > 0:
@@ -1037,6 +984,24 @@ def show_prediction():
                         st.metric("Most Common Vehicle", common_vehicle.iloc[0])
                 else:
                     st.metric("Most Common Vehicle", "Data not available")
+            
+            with demo_col2:
+                # Dependents insights
+                dependents_data = segment_data.get('dependents')
+                if dependents_data is not None and len(dependents_data) > 0:
+                    avg_dependents = dependents_data.mean()
+                    st.metric("Average Dependents", f"{avg_dependents:.1f}")
+                else:
+                    st.metric("Average Dependents", "Data not available")
+                
+                # House ownership insights
+                house_data = segment_data.get('house_ownership')
+                if house_data is not None and len(house_data) > 0:
+                    common_house = house_data.mode()
+                    if not common_house.empty:
+                        st.metric("Most Common House Ownership", common_house.iloc[0])
+                else:
+                    st.metric("Most Common House Ownership", "Data not available")
             
             # Economic recommendations
             st.subheader("💡 Economic Recommendations")
@@ -1099,21 +1064,28 @@ def show_prediction():
             else:
                 personalized_tips.append("💡 Consider further education or certification programs to increase earning potential")
                 
-            if occupation_score >= 5:  # Government Employee or higher
-                personalized_tips.append("✅ Your occupation provides good stability - focus on career progression")
+            if employment_score >= 4:  # Self-Employed or Employed
+                personalized_tips.append("✅ Your employment status provides stability - focus on career progression")
             else:
-                personalized_tips.append("💡 Explore opportunities for career development or side businesses")
+                personalized_tips.append("💡 Explore employment opportunities or skill development programs")
                 
             if dependents >= 3:
                 personalized_tips.append("👨‍👩‍👧‍👦 With multiple dependents, prioritize family budgeting and education planning")
                 
-            if home_score >= 4:  # Home owned with mortgage or fully
-                personalized_tips.append("🏠 Your home ownership is a strong asset - consider its role in your net worth")
+            if house_score >= 3:  # Contract or Owned
+                personalized_tips.append("🏠 Your housing situation is stable - consider its role in your financial planning")
             else:
-                personalized_tips.append("🏠 Consider long-term housing strategy as part of your financial plan")
+                personalized_tips.append("🏠 Consider long-term housing strategy as part of your financial goals")
                 
-            if vehicle_score <= 2:  # No vehicle or motorcycle only
-                personalized_tips.append("🚗 Vehicle ownership could be a next financial goal for improved mobility")
+            if area_score >= 2:  # Suburban or Urban
+                personalized_tips.append("📍 Your location offers good economic opportunities - leverage local resources")
+            else:
+                personalized_tips.append("📍 Explore opportunities to connect with economic centers in your area")
+                
+            if vehicle_score >= 3:  # Car or Motorcycle and Car
+                personalized_tips.append("🚗 Your vehicle ownership supports mobility - consider maintenance costs in your budget")
+            else:
+                personalized_tips.append("🚗 Consider transportation needs and potential vehicle ownership as a future goal")
                 
             for tip in personalized_tips:
                 st.write(tip)
