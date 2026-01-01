@@ -48,7 +48,7 @@ def main():
     
     # Copyright at the bottom of main app
     st.markdown("---")
-    st.markdown("### Copyright © 2025 - Indonesia's Economic People Prediction System")
+    st.markdown("### Copyright © 2026 - Indonesia's Economic People Prediction System")
     st.markdown("**AI Assistant for Early Detection of Indonesia's Economic Peoples. All Rights Reserved. Created by Ridha Ash Siddiqy.**")
 
 def show_home():
@@ -1117,6 +1117,7 @@ def show_prediction():
 
 if __name__ == "__main__":
     main()
+
 
 
 
